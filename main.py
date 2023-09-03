@@ -1,7 +1,8 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 
 def get_birthdays_per_week(users):
+    # Реалізуйте тут домашнє завдання
     today = date.today()  # Отримуємо поточну дату
     next_week = today + timedelta(days=7)  # Обчислюємо дату через тиждень
     weekdays = {
@@ -24,24 +25,24 @@ def get_birthdays_per_week(users):
             birthday = birthday.replace(year=today.year + 1)
 
         # Перевіряємо, чи день народження потрапляє у вікно наступного тижня і не впадає на вихідні
-        if today <= birthday <= next_week and birthday.weekday() < 5:  # 0-4 відповідають пн-пт (робочі дні)
-            day_name = weekdays[birthday.weekday()]  # Отримуємо назву дня тижня для дня народження
+        if today <= birthday <= next_week:
+            # 0-4 відповідають пн-пт (робочі дні)
+            day_name = weekdays[birthday.weekday()] 
+            if day_name in ["Saturday", "Sunday"]:
+                day_name = "Monday" # Отримуємо назву дня тижня для дня народження
             birthday_week[day_name].append(user["name"])  # Додаємо ім'я користувача до списку імен відповідного дня тижня
 
     return {day: names for day, names in birthday_week.items() if names}
+    
 
 
-# Приклад списку користувачів із їхніми датами народження
-users = [
-    {"name": "Jan Koum", "birthday": date(1976, 1, 1)},
-    {"name": "Yura Skeba", "birthday": date(1993, 5, 4)},
-    {"name": "Denys Parandiy", "birthday": date(1994, 5, 5)},
-    {"name": "Bohdan Sikan", "birthday": date(1991, 9, 5)},
-    {"name": "Jorjio Pistolero", "birthday": date(1991, 9, 9)}
-]
+if __name__ == "__main__":
+    users = [
+        {"name": "Jan Koum", "birthday": datetime(1976, 1, 1).date()},
+    ]
 
-# Отримання словника з днями народження на наступному тижні
-birthdays_per_week = get_birthdays_per_week(users)
-
-# Вивід результатів
-print(birthdays_per_week)
+    result = get_birthdays_per_week(users)
+    print(result)
+    # Виводимо результат
+    for day_name, names in result.items():
+        print(f"{day_name}: {', '.join(names)}")

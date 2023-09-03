@@ -1,58 +1,47 @@
-from datetime import date, datetime
+from datetime import date, timedelta
 
 
 def get_birthdays_per_week(users):
-     #створюєму змінну, яка приймає теперішню дату 
-    current_data = datetime.today()
-    
-    #це є той словник з пустими словниками  без суботи і неділі
-    birthday_dict = {
-    "Monday": [],
-    "Tuesday": [],
-    "Wednesday": [],
-    "Thursday": [],
-    "Friday": []
-    }
+    today = date.today()  # Отримуємо поточну дату
+    next_week = today + timedelta(days=7)  # Обчислюємо дату через тиждень
+    weekdays = {
+        0: "Monday",
+        1: "Tuesday",
+        2: "Wednesday",
+        3: "Thursday",
+        4: "Friday",
+        5: "Saturday",
+        6: "Sunday",
+    }  # Словник з номерацією днів тижня та відповідними назвами днів
+    birthday_week = {day: [] for day in
+                     weekdays.values()}  # Створюємо словник для зберігання днів народження за днями тижня
 
-    #шукаємо дні народження у списку користувачів
     for user in users:
-        birthday = user['birthday']
-        name = user['name']
-        if birthday.year < 1913: # провіряємо чи людину вартує відкопувати і вітати
-            print(f"The birth year {birthday.year}, maybe you have  Frodo`s ring?")
-            continue
-        if birthday.year > current_data.year: # провіряємо чи людина не з майбутнього
-            print(f"The birth year {birthday.year}, maybe you are traveler from the future?")
-            continue
-        # Перевіряємо, чи день народження співпадає з поточним місяцем.
-        if birthday.month == current_data.month:
-            if birthday.day <= current_data.day + 7 and birthday.day >= (current_data).day:
-                try_day =datetime(current_data.year,birthday.month,birthday.day)
-                # Перетягуємо наших іменинників на понеділок
-                week_day = try_day.strftime('%A') if try_day.strftime('%A') not in ('Sunday' ,'Saturday') else 'Monday'
-                birthday_dict[week_day].append(name)
-        # Перевіряємо, чи день народження співпадає з наступним місяцем.        
-        if birthday.month - current_data.month == 1:
-            if birthday.day <= (current_data + date.timedelta(days=7)).day:
-                try_day = datetime(current_data.year,birthday.month,birthday.day)
-                week_day = try_day.strftime('%A') if try_day.strftime('%A') not in ('Sunday' ,'Saturday') else 'Monday'
-                birthday_dict[week_day].append(name)
-                
+        # Встановлюємо поточний рік для дня народження користувача
+        birthday = user["birthday"].replace(year=today.year)
+        if birthday < today:  # Якщо день народження вже минув у поточному році
+            # Встановлюємо наступний рік
+            birthday = birthday.replace(year=today.year + 1)
 
-    return birthday_dict
+        # Перевіряємо, чи день народження потрапляє у вікно наступного тижня і не впадає на вихідні
+        if today <= birthday <= next_week and birthday.weekday() < 5:  # 0-4 відповідають пн-пт (робочі дні)
+            day_name = weekdays[birthday.weekday()]  # Отримуємо назву дня тижня для дня народження
+            birthday_week[day_name].append(user["name"])  # Додаємо ім'я користувача до списку імен відповідного дня тижня
+
+    return {day: names for day, names in birthday_week.items() if names}
 
 
-if __name__ == "__main__":
-    users = [
-        {"name": "Jan Koum", "birthday": datetime(1976, 1, 1).date()},
-        {"name": "Yura Skeba", "birthday": datetime(1993, 5, 4).date()},
-        {"name": "Denys Parandiy", "birthday": datetime(1994, 5, 5).date()},
-        {"name": "Bohdan Sikan", "birthday": datetime(1991, 9, 5).date()},
-        {"name": "Jorjio Pistolero", "birthday": datetime(1991, 9, 9).date()}
-    ]
+# Приклад списку користувачів із їхніми датами народження
+users = [
+    {"name": "Jan Koum", "birthday": date(1976, 1, 1)},
+    {"name": "Yura Skeba", "birthday": date(1993, 5, 4)},
+    {"name": "Denys Parandiy", "birthday": date(1994, 5, 5)},
+    {"name": "Bohdan Sikan", "birthday": date(1991, 9, 5)},
+    {"name": "Jorjio Pistolero", "birthday": date(1991, 9, 9)}
+]
 
-    result = get_birthdays_per_week(users)
-    print(result)
-    # Виводимо результат
-    for day_name, names in result.items():
-        print(f"{day_name}: {', '.join(names)}")
+# Отримання словника з днями народження на наступному тижні
+birthdays_per_week = get_birthdays_per_week(users)
+
+# Вивід результатів
+print(birthdays_per_week)
